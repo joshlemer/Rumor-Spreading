@@ -93,6 +93,38 @@ class  Push_alg:
 				Node.tell_rumor()
 
 			self.turns_elapsed += 1
+
+class PushPull_alg:
+	def __init__(self, size):
+		self.the_net = Network(size)
+		self.the_net.rand_src()
+		self.turns_elapsed = 0
+		self.connections_made = 0
+		self.transmissions_made = 0
+
+	def do_turn(self, turns):
+		
+		for _ in range(0, turns):
+			nodes_to_tell = []
+
+			for Node in self.the_net.Nodes:
+				rand = random.choice(Node.net.Nodes)
+				while rand.index == Node.index:
+					rand = random.choice(Node.net.Nodes)
+
+				self.connections_made += 1
+				if Node.knows_rumor:
+					nodes_to_tell.append(rand)
+					self.transmissions_made += 1
+
+				elif rand.knows_rumor:
+					nodes_to_tell.append(Node)
+					self.transmissions_made += 1
+
+			for Node in nodes_to_tell:
+				Node.tell_rumor()
+
+			self.turns_elapsed += 1		
 			
 print "Pushing"
 b = Push_alg(10)
@@ -108,6 +140,14 @@ print "Pulling"
 b = Pull_alg(10)
 b.the_net.print_net()
 
+for _ in range(0,10):
+	b.do_turn(1)
+	b.the_net.print_net()
+
+print "connections: %d transmissions: %d" % (b.connections_made, b.transmissions_made)
+
+print "PushPulling"
+b = PushPull_alg(10)
 for _ in range(0,10):
 	b.do_turn(1)
 	b.the_net.print_net()
