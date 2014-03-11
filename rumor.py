@@ -8,12 +8,15 @@ class Node:
 		self.ctr = 0
 		self.state = 'A'
 		self.net = net
+		self.informed = Set()
 	
 	def tell_rumor(self):
 		self.knows_rumor = True
 		
 		if self.state is 'A': self.state = 'B'
-	
+
+		self.informed = self.informed.add(self.index)
+
 class Network:
 	def __init__(self, size):
 		self.size = size
