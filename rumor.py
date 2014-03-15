@@ -10,7 +10,7 @@ class Node:
 		self.ctr = 0
 		self.state = 'A'
 		self.net = net
-		self.informed = Set()
+		self.informed = Set([])
 		self.c_ctr = 0
 		self.BLessCtr = 0
 		self.BGreaterOrEqCtr = 0
@@ -22,7 +22,7 @@ class Node:
 		#theMsg is None when we're not using Msg objects
 		if theMsg is None:
 			self.knows_rumor = True
-			self.informed = self.informed.add(self.index)
+			self.informed.add(self.index)
 
 		else:
 			
@@ -37,9 +37,11 @@ class Node:
 					#theMsg.stateFrom is 'C'
 					self.state = 'C'
 			elif self.state is 'B':
-				if theMsg.ctrFrom <= self.ctr: self.BLessCtr += 1
+				if theMsg.ctrFrom < self.ctr: self.BLessCtr += 1
 				else:
 					self.BGreaterOrEqCtr += 1
+				if theMsg.stateFrom is 'C':
+					self.state = 'C'
 
 class Msg:
 #The Msg is thought to contain the rumor
@@ -56,7 +58,7 @@ class Msg:
 		self.ctrFrom = from_Node.ctr
 		self.ctrTo = to_Node.ctr
 
-		self.informed =- from_Node.informed
+		self.informed = from_Node.informed
 
 
 
@@ -77,7 +79,7 @@ class Network:
 		for Node in self.Nodes:
 			num = 0
 			if Node.knows_rumor: num = 1
-			print ("(%d %d)" % (Node.index, Node.knows_rumor)),
+			print ("(%d %s%d %d)" % (Node.index, Node.state, Node.ctr, Node.knows_rumor)),
 		print "\n"
 		
 class Median_Ctr_alg:
@@ -92,7 +94,7 @@ class Median_Ctr_alg:
 		for _ in range(0, turns):
 			messages = []
 
-			for Node in the_net:
+			for Node in self.the_net.Nodes:
 
 				if Node.state is 'A':
 					rand = random.choice(Node.net.Nodes)
@@ -118,7 +120,7 @@ class Median_Ctr_alg:
 						Node.c_ctr += 1
 
 			for message in messages:
-				self.the_net.Nodes[message.index].tell_rumor(message)
+				self.the_net.Nodes[message.toNode].tell_rumor(message)
 
 			#Now update all the B and C states (in case of Bm ->Bm+1, BctrMax+1 -> C or C->D
 			for node in self.the_net.Nodes:
@@ -244,6 +246,16 @@ print "connections: %d transmissions: %d" % (b.connections_made, b.transmissions
 print "PushPulling"
 b = PushPull_alg(10)
 for _ in range(0,10):
+	b.do_turn(1)
+	b.the_net.print_net()
+
+print "connections: %d transmissions: %d" % (b.connections_made, b.transmissions_made)
+
+
+print "Median Counting"
+b = Median_Ctr_alg(10)
+b.the_net.print_net()
+for _ in range(0,30):
 	b.do_turn(1)
 	b.the_net.print_net()
 
