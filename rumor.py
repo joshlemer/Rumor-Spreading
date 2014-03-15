@@ -1,7 +1,6 @@
 import random
+import math
 from sets import Set
-
-cMax = 10
 
 class Node:
 	def __init__(self, net, index):
@@ -14,8 +13,8 @@ class Node:
 		self.c_ctr = 0
 		self.BLessCtr = 0
 		self.BGreaterOrEqCtr = 0
-		self.cMax = 10
-		self.ctrMax = 10
+		self.ctrMax = math.log(math.log(self.net.size))
+		self.cMax = self.ctrMax
 
 	def tell_rumor(self, theMsg = None):
 
@@ -128,7 +127,7 @@ class Median_Ctr_alg:
 					node.ctr += 1
 					if node.ctr > node.ctrMax: node.state = 'C'
 
-			 	elif node.c_ctr > cMax: node.state = 'D'
+			 	elif node.c_ctr > node.cMax: node.state = 'D'
 
 
 class Pull_alg:
@@ -245,7 +244,7 @@ print "connections: %d transmissions: %d" % (b.connections_made, b.transmissions
 
 print "PushPulling"
 b = PushPull_alg(10)
-for _ in range(0,10):
+for _ in range(0,100):
 	b.do_turn(1)
 	b.the_net.print_net()
 
@@ -253,10 +252,11 @@ print "connections: %d transmissions: %d" % (b.connections_made, b.transmissions
 
 
 print "Median Counting"
-b = Median_Ctr_alg(10)
+b = Median_Ctr_alg(100)
 b.the_net.print_net()
 for _ in range(0,30):
 	b.do_turn(1)
-	b.the_net.print_net()
+	#b.the_net.print_net()
 
+print "ctrmax: %d" % b.the_net.Nodes[0].ctrMax
 print "connections: %d transmissions: %d" % (b.connections_made, b.transmissions_made)
