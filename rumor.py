@@ -1,6 +1,8 @@
 import random
 from sets import Set
 
+cMax = 10
+
 class Node:
 	def __init__(self, net, index):
 		self.index = index
@@ -9,13 +11,54 @@ class Node:
 		self.state = 'A'
 		self.net = net
 		self.informed = Set()
-	
-	def tell_rumor(self):
-		self.knows_rumor = True
-		
-		if self.state is 'A': self.state = 'B'
+		self.c_ctr = 0
+		self.BLessCtr = 0
+		self.BGreaterOrEqCtr = 0
+		self.cMax = 10
+		self.ctrMax = 10
 
-		self.informed = self.informed.add(self.index)
+	def tell_rumor(self, theMsg = None):
+
+		#theMsg is None when we're not using Msg objects
+		if theMsg is None:
+			self.knows_rumor = True
+			self.informed = self.informed.add(self.index)
+
+		else:
+			
+			self.knows_rumor = True
+			self.informed = self.informed | theMsg.informed
+			
+			if self.state is 'A':
+				if theMsg.stateFrom is 'B':
+					self.state = 'B'
+					self.ctr = 1
+				else:
+					#theMsg.stateFrom is 'C'
+					self.state = 'C'
+			elif self.state is 'B':
+				if theMsg.ctrFrom <= self.ctr: self.BLessCtr += 1
+				else:
+					self.BGreaterOrEqCtr += 1
+
+class Msg:
+#The Msg is thought to contain the rumor
+	def __init__(self, from_Node, to_Node):
+
+		self.fromNode = from_Node.index
+		self.toNode = to_Node.index
+
+		#state_of_from is the state of from_node at time of making Msg
+		self.stateFrom = from_Node.state
+		self.stateTo = to_Node.state
+
+		#similar for ctr
+		self.ctrFrom = from_Node.ctr
+		self.ctrTo = to_Node.ctr
+
+		self.informed =- from_Node.informed
+
+
 
 class Network:
 	def __init__(self, size):
@@ -36,6 +79,55 @@ class Network:
 			if Node.knows_rumor: num = 1
 			print ("(%d %d)" % (Node.index, Node.knows_rumor)),
 		print "\n"
+		
+class Median_Ctr_alg:
+	def __init__(self, size):
+		self.the_net = Network(size)
+		self.the_net.rand_src()
+		self.turns_elapsed = 0
+		self.connections_made = 0
+		self.transmissions_made = 0
+	
+	def do_turn(self, turns):
+		for _ in range(0, turns):
+			messages = []
+
+			for Node in the_net:
+
+				if Node.state is 'A':
+					rand = random.choice(Node.net.Nodes)
+					while rand.index == Node.index:
+						rand = random.choice(Node.net.Nodes)
+
+					self.connections_made += 1
+
+					if rand.knows_rumor:
+						messages.append(Msg(rand,Node))
+						self.transmissions_made += 1
+
+				elif Node.state is 'B' or Node.state is 'C':
+					rand = random.choice(Node.net.Nodes)
+					while rand.index == Node.index:
+						rand = random.choice(Node.net.Nodes)
+
+					self.connections_made += 1
+					messages.append(Msg(Node, rand))
+					self.transmissions_made += 1
+
+					if Node.state is 'C':
+						Node.c_ctr += 1
+
+			for message in messages:
+				self.the_net.Nodes[message.index].tell_rumor(message)
+
+			#Now update all the B and C states (in case of Bm ->Bm+1, BctrMax+1 -> C or C->D
+			for node in self.the_net.Nodes:
+				if node.state is 'B' and node.BLessCtr < node.BGreaterOrEqCtr:	
+					node.ctr += 1
+					if node.ctr > node.ctrMax: node.state = 'C'
+
+			 	elif node.c_ctr > cMax: node.state = 'D'
+
 
 class Pull_alg:
 	def __init__(self, size):
