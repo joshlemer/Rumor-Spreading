@@ -18,7 +18,7 @@ for algo in algos:
 #do each algo with sharing
 for algo in algos:
 	b = algo(size, True)
-	print b.algorithm + "Sharing"
+	print b.algorithm + " Sharing"
 	b.do_turn(turns)
 	print "connections: %d transmissions: %d Informed: %d / %d" % (b.connections_made, b.transmissions_made, b.the_net.informed(), b.the_net.size)
 	if algo is Median_Ctr_alg:

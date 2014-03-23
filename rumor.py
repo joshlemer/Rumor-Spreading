@@ -9,7 +9,7 @@ class Node:
 		self.ctr = 0
 		self.state = 'A'
 		self.net = net
-		self.uninformed = Set(range(0,self.net.size))
+		self.informed = Set([])
 		self.c_ctr = 0
 		self.BLessCtr = 0
 		self.BGreaterOrEqCtr = 0
@@ -19,15 +19,10 @@ class Node:
 
 	def tell_rumor(self, theMsg = None):
 
-		#theMsg is None when we're not using Msg objects
-		if theMsg is None:
-			self.knows_rumor = True
-
-			self.uninformed = self.uninformed - Set([self.index])
-
-		else:
-			self.knows_rumor = True
-			self.uninformed = self.uninformed - theMsg.informed - Set([self.index])
+		self.knows_rumor = True
+		self.informed = self.informed | Set([self.index])
+		if theMsg is not None:
+			self.informed = self.informed | theMsg.informed
 			
 			if self.state is 'A':
 				if theMsg.stateFrom is 'B':
@@ -42,6 +37,9 @@ class Node:
 					self.BGreaterOrEqCtr += 1
 				if theMsg.stateFrom is 'C':
 					self.state = 'C'
+		else:
+			self.state = 'B'
+			self.ctr = 1
 
 class Msg:
 #The Msg is thought to contain the rumor
@@ -58,9 +56,10 @@ class Msg:
 		self.ctrFrom = from_Node.ctr
 		self.ctrTo = to_Node.ctr
 
-		self.informed = Set(range(0,from_Node.net.size)) - from_Node.uninformed
-
-
+		self.informed = from_Node.informed
+	
+	def printMsg(self):
+		print "From: %d To: %d" % (self.fromNode, self.toNode)
 
 class Network:
 	def __init__(self, size):
@@ -71,9 +70,7 @@ class Network:
 	
 	def rand_src(self):
 		rand = random.choice(self.Nodes)
-		rand.ctr = 1
-		rand.state = 'B'
-		rand.knows_rumor = True
+		rand.tell_rumor()
 	
 	def informed(self):
 		count = 0
@@ -110,24 +107,20 @@ class Median_Ctr_alg:
 					while rand.index == Node.index:
 						rand = random.choice(Node.net.Nodes)
 
-					if self.sharing and len(Node.uninformed) > 0:
-						rand = self.the_net.Nodes[Node.uninformed.pop()]
-
-						#pop takes the inxex out of the set. This is ugly but we must add it back
-						Node.uninformed.add(rand.index)
-
 					self.connections_made += 1
 
 					if rand.knows_rumor:
 						messages.append(Msg(rand,Node))
 						self.transmissions_made += 1
 						
-					Node
 
 				elif Node.state is 'B' or Node.state is 'C':
 					rand = random.choice(Node.net.Nodes)
 					while rand.index == Node.index:
 						rand = random.choice(Node.net.Nodes)
+
+					if self.sharing and len(Node.informed) < self.the_net.size:
+						rand = random.sample(Set(self.the_net.Nodes) - Node.informed, 1)[0]
 
 					self.connections_made += 1
 					messages.append(Msg(Node, rand))
@@ -161,7 +154,7 @@ class Pull_alg:
 	def do_turn(self, turns):
 
 		for _ in range(0, turns):
-			nodes_to_tell = []
+			messages = []
 			
 			for Node in self.the_net.Nodes:
 				if not Node.knows_rumor:
@@ -169,20 +162,17 @@ class Pull_alg:
 					while rand.index == Node.index:
 						rand = random.choice(Node.net.Nodes)
 
-					if self.sharing and len(Node.uninformed) > 0:
-						rand = self.the_net.Nodes[Node.uninformed.pop()]
-
-						#pop takes the inxex out of the set. This is ugly but we must add it back
-						Node.uninformed.add(rand.index)
+					if self.sharing and len(Node.informed) < self.the_net.size:
+						rand = random.sample(Set(self.the_net.Nodes) - Node.informed, 1)[0]
 
 					self.connections_made += 1
 
 					if rand.knows_rumor:
-						nodes_to_tell.append(Node)
+						messages.append(Msg(rand,Node))
 						self.transmissions_made += 1
 
-			for Node in nodes_to_tell:
-				Node.tell_rumor()
+			for message in messages:
+				self.the_net.Nodes[message.toNode].tell_rumor(message)
 
 			self.turns_elapsed += 1
 
@@ -199,7 +189,7 @@ class  Push_alg:
 	def do_turn(self, turns):
 
 		for _ in range(0, turns):
-			nodes_to_tell = []
+			messages = []
 
 			for Node in self.the_net.Nodes:
 				if Node.knows_rumor:
@@ -207,19 +197,17 @@ class  Push_alg:
 					while rand.index == Node.index:
 						rand = random.choice(Node.net.Nodes)
 
-					if self.sharing and len(Node.uninformed) > 0:
-						rand = self.the_net.Nodes[Node.uninformed.pop()]
-
-						#pop takes the inxex out of the set. This is ugly but we must add it back
-						Node.uninformed.add(rand.index)
+					if self.sharing and len(Node.informed) < self.the_net.size:
+						rand = random.sample(Set(self.the_net.Nodes) - Node.informed, 1)[0]
 
 					self.connections_made += 1
 
-					nodes_to_tell.append(rand)
+					messages.append(Msg(Node,rand))
 					self.transmissions_made += 1
 
-			for Node in nodes_to_tell:
-				Node.tell_rumor()
+			for message in messages:
+				self.the_net.Nodes[message.toNode].tell_rumor(message)
+				
 
 			self.turns_elapsed += 1
 
@@ -236,30 +224,27 @@ class PushPull_alg:
 	def do_turn(self, turns):
 		
 		for _ in range(0, turns):
-			nodes_to_tell = []
+			messages = []
 
 			for Node in self.the_net.Nodes:
 				rand = random.choice(Node.net.Nodes)
 				while rand.index == Node.index:
 					rand = random.choice(Node.net.Nodes)
 
-				if self.sharing and len(Node.uninformed) > 0:
-					rand = self.the_net.Nodes[Node.uninformed.pop()]
-
-					#pop takes the inxex out of the set. This is ugly but we must add it back
-					Node.uninformed.add(rand.index)
+				if self.sharing and len(Node.informed) < self.the_net.size:
+					rand = random.sample(Set(self.the_net.Nodes) - Node.informed, 1)[0]
 
 				self.connections_made += 1
 				if Node.knows_rumor:
-					nodes_to_tell.append(rand)
+					messages.append(Msg(Node,rand))
 					self.transmissions_made += 1
 
 				elif rand.knows_rumor:
-					nodes_to_tell.append(Node)
+					messages.append(Msg(rand,Node))
 					self.transmissions_made += 1
 
-			for Node in nodes_to_tell:
-				Node.tell_rumor()
+			for message in messages:
+				self.the_net.Nodes[message.toNode].tell_rumor(message)
 
 			self.turns_elapsed += 1		
 			
