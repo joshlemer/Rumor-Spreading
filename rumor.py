@@ -75,6 +75,13 @@ class Network:
 		rand.state = 'B'
 		rand.knows_rumor = True
 	
+	def informed(self):
+		count = 0
+		for node in self.Nodes:
+			if node.knows_rumor:
+				count += 1
+		return count
+
 	def print_net(self):
 		for Node in self.Nodes:
 			num = 0
@@ -90,6 +97,7 @@ class Median_Ctr_alg:
 		self.connections_made = 0
 		self.transmissions_made = 0
 		self.sharing = sharing
+		self.algorithm = "Median Counter Algorithm"
 	
 	def do_turn(self, turns):
 		for _ in range(0, turns):
@@ -103,7 +111,7 @@ class Median_Ctr_alg:
 						rand = random.choice(Node.net.Nodes)
 
 					if self.sharing and len(Node.uninformed) > 0:
-						rand = the_net.Nodes[Node.uninformed.pop()]
+						rand = self.the_net.Nodes[Node.uninformed.pop()]
 
 						#pop takes the inxex out of the set. This is ugly but we must add it back
 						Node.uninformed.add(rand.index)
@@ -148,6 +156,7 @@ class Pull_alg:
 		self.connections_made = 0
 		self.transmissions_made = 0
 		self.sharing = sharing
+		self.algorithm = "Pull Algorithm"
 	
 	def do_turn(self, turns):
 
@@ -161,7 +170,7 @@ class Pull_alg:
 						rand = random.choice(Node.net.Nodes)
 
 					if self.sharing and len(Node.uninformed) > 0:
-						rand = the_net.Nodes[Node.uninformed.pop()]
+						rand = self.the_net.Nodes[Node.uninformed.pop()]
 
 						#pop takes the inxex out of the set. This is ugly but we must add it back
 						Node.uninformed.add(rand.index)
@@ -171,7 +180,6 @@ class Pull_alg:
 					if rand.knows_rumor:
 						nodes_to_tell.append(Node)
 						self.transmissions_made += 1
-						print "%d told %d" % (rand.index, Node.index)
 
 			for Node in nodes_to_tell:
 				Node.tell_rumor()
@@ -186,6 +194,7 @@ class  Push_alg:
 		self.connections_made = 0
 		self.transmissions_made = 0
 		self.sharing = sharing
+		self.algorithm = "Push Algorithm"
 
 	def do_turn(self, turns):
 
@@ -199,7 +208,7 @@ class  Push_alg:
 						rand = random.choice(Node.net.Nodes)
 
 					if self.sharing and len(Node.uninformed) > 0:
-						rand = the_net.Nodes[Node.uninformed.pop()]
+						rand = self.the_net.Nodes[Node.uninformed.pop()]
 
 						#pop takes the inxex out of the set. This is ugly but we must add it back
 						Node.uninformed.add(rand.index)
@@ -222,6 +231,7 @@ class PushPull_alg:
 		self.connections_made = 0
 		self.transmissions_made = 0
 		self.sharing = sharing
+		self.algorithm = "Push-Pull Algorithm"
 
 	def do_turn(self, turns):
 		
@@ -234,7 +244,7 @@ class PushPull_alg:
 					rand = random.choice(Node.net.Nodes)
 
 				if self.sharing and len(Node.uninformed) > 0:
-					rand = the_net.Nodes[Node.uninformed.pop()]
+					rand = self.the_net.Nodes[Node.uninformed.pop()]
 
 					#pop takes the inxex out of the set. This is ugly but we must add it back
 					Node.uninformed.add(rand.index)
@@ -253,42 +263,3 @@ class PushPull_alg:
 
 			self.turns_elapsed += 1		
 			
-print "Pushing"
-b = Push_alg(10)
-b.the_net.print_net()
-
-for _ in range(0,10):
-	b.do_turn(1)
-	b.the_net.print_net()
-
-print "connections: %d transmissions: %d" % (b.connections_made, b.transmissions_made)
-
-print "Pulling"
-b = Pull_alg(10)
-b.the_net.print_net()
-
-for _ in range(0,10):
-	b.do_turn(1)
-	b.the_net.print_net()
-
-print "connections: %d transmissions: %d" % (b.connections_made, b.transmissions_made)
-
-print "PushPulling"
-b = PushPull_alg(10)
-for _ in range(0,100):
-	b.do_turn(1)
-	b.the_net.print_net()
-
-print "connections: %d transmissions: %d" % (b.connections_made, b.transmissions_made)
-
-
-print "Median Counting"
-b = Median_Ctr_alg(100)
-b.the_net.print_net()
-for _ in range(0,30):
-	b.do_turn(1)
-	#b.the_net.print_net()
-
-print "ctrmax: %d" % b.the_net.Nodes[0].ctrMax
-print "connections: %d transmissions: %d" % (b.connections_made, b.transmissions_made)	
-
