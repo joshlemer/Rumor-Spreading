@@ -120,7 +120,7 @@ class Median_Ctr_alg:
 						rand = random.choice(Node.net.Nodes)
 
 					if self.sharing and len(Node.informed) < self.the_net.size:
-						rand = random.sample(Set(self.the_net.Nodes) - Node.informed, 1)[0]
+						rand = self.the_net.Nodes[random.sample(Set(range(0, self.the_net.size)) - Node.informed, 1)[0]]
 
 					self.connections_made += 1
 					messages.append(Msg(Node, rand))
@@ -131,6 +131,7 @@ class Median_Ctr_alg:
 
 			for message in messages:
 				self.the_net.Nodes[message.toNode].tell_rumor(message)
+				self.the_net.Nodes[message.fromNode].informed.add(message.toNode)
 
 			#Now update all the B and C states (in case of Bm ->Bm+1, BctrMax+1 -> C or C->D
 			for node in self.the_net.Nodes:
@@ -163,7 +164,7 @@ class Pull_alg:
 						rand = random.choice(Node.net.Nodes)
 
 					if self.sharing and len(Node.informed) < self.the_net.size:
-						rand = random.sample(Set(self.the_net.Nodes) - Node.informed, 1)[0]
+						rand = self.the_net.Nodes[random.sample(Set(range(0, self.the_net.size)) - Node.informed, 1)[0]]
 
 					self.connections_made += 1
 
@@ -173,6 +174,7 @@ class Pull_alg:
 
 			for message in messages:
 				self.the_net.Nodes[message.toNode].tell_rumor(message)
+				self.the_net.Nodes[message.fromNode].informed.add(message.toNode)
 
 			self.turns_elapsed += 1
 
@@ -185,6 +187,7 @@ class  Push_alg:
 		self.transmissions_made = 0
 		self.sharing = sharing
 		self.algorithm = "Push Algorithm"
+		self.messages = []
 
 	def do_turn(self, turns):
 
@@ -198,7 +201,7 @@ class  Push_alg:
 						rand = random.choice(Node.net.Nodes)
 
 					if self.sharing and len(Node.informed) < self.the_net.size:
-						rand = random.sample(Set(self.the_net.Nodes) - Node.informed, 1)[0]
+						rand = self.the_net.Nodes[random.sample(Set(range(0, self.the_net.size)) - Node.informed, 1)[0]]
 
 					self.connections_made += 1
 
@@ -206,7 +209,9 @@ class  Push_alg:
 					self.transmissions_made += 1
 
 			for message in messages:
+				self.messages.append(message)
 				self.the_net.Nodes[message.toNode].tell_rumor(message)
+				self.the_net.Nodes[message.fromNode].informed.add(message.toNode)
 				
 
 			self.turns_elapsed += 1
@@ -232,7 +237,7 @@ class PushPull_alg:
 					rand = random.choice(Node.net.Nodes)
 
 				if self.sharing and len(Node.informed) < self.the_net.size:
-					rand = random.sample(Set(self.the_net.Nodes) - Node.informed, 1)[0]
+					rand = self.the_net.Nodes[random.sample(Set(range(0, self.the_net.size)) - Node.informed, 1)[0]]
 
 				self.connections_made += 1
 				if Node.knows_rumor:
@@ -245,6 +250,7 @@ class PushPull_alg:
 
 			for message in messages:
 				self.the_net.Nodes[message.toNode].tell_rumor(message)
+				self.the_net.Nodes[message.fromNode].informed.add(message.toNode)
 
 			self.turns_elapsed += 1		
 			
