@@ -49,25 +49,3 @@ for algo in algos:
 	
 	print "%s: Average stats: (Connections %s) (Transmissions %s) (Informed %s / %d)" % (b.algorithm, connections, transmissions, informed, size)
 	print
-"""
-print "Pushing"
-b = Push_alg(size)
-b.do_turn(turns)
-print "connections: %d transmissions: %d Informed: %d / %d" % (b.connections_made, b.transmissions_made, b.the_net.informed(), b.the_net.size)
-
-print "Pulling"
-b = Pull_alg(size)
-b.do_turn(turns)
-print "connections: %d transmissions: %d Informed: %d / %d" % (b.connections_made, b.transmissions_made, b.the_net.informed(), b.the_net.size)
-
-print "PushPulling"
-b = PushPull_alg(size)
-b.do_turn(turns)
-print "connections: %d transmissions: %d Informed: %d / %d" % (b.connections_made, b.transmissions_made, b.the_net.informed(), b.the_net.size)
-
-print "Median Counting"
-b = Median_Ctr_alg(size)
-b.do_turn(turns)
-print "connections: %d transmissions: %d Informed: %d / %d" % (b.connections_made, b.transmissions_made, b.the_net.informed(), b.the_net.size)
-print "ctrmax: %d" % b.the_net.Nodes[0].ctrMax
-"""
