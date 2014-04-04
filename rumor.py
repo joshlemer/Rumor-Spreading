@@ -163,9 +163,6 @@ class Pull_alg:
 					while rand.index == Node.index:
 						rand = random.choice(Node.net.Nodes)
 
-					if self.sharing and len(Node.informed) < self.the_net.size:
-						rand = self.the_net.Nodes[random.sample(Set(range(0, self.the_net.size)) - Node.informed, 1)[0]]
-
 					self.connections_made += 1
 
 					if rand.knows_rumor:
@@ -236,7 +233,7 @@ class PushPull_alg:
 				while rand.index == Node.index:
 					rand = random.choice(Node.net.Nodes)
 
-				if self.sharing and len(Node.informed) < self.the_net.size:
+				if Node.knows_rumor and self.sharing and len(Node.informed) < self.the_net.size:
 					rand = self.the_net.Nodes[random.sample(Set(range(0, self.the_net.size)) - Node.informed, 1)[0]]
 
 				self.connections_made += 1
